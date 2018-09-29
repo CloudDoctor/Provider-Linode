@@ -342,4 +342,14 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
         $this->validityReasons = $validityReasons;
         return $this;
     }
+
+    public function updateTags(): void
+    {
+        $this->getRequester()->putJson(
+            "/linode/instances/{$this->getLinodeId()}",
+            [
+                'tags' => $this->getTags(),
+            ]
+        );
+    }
 }
