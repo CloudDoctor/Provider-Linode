@@ -6,6 +6,7 @@ use CloudDoctor\CloudDoctor;
 use CloudDoctor\Common\ComputeGroup;
 use CloudDoctor\Exceptions\CloudDoctorException;
 use CloudDoctor\Interfaces\ComputeInterface;
+use GuzzleHttp\Exception\ClientException;
 use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
 use phpseclib\Net\SSH2;
@@ -221,10 +222,15 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
         return in_array($this->getName(), LinodeInstances::listAvailable());
     }
 
-    public function destroy()
+    public function destroy() : bool
     {
-        $this->requester->deleteJson("/linode/instances/{$this->getLinodeId()}");
-        $this->linodeId = null;
+        try {
+            $this->requester->deleteJson("/linode/instances/{$this->getLinodeId()}");
+            $this->linodeId = null;
+            return true;
+        }catch(ClientException $clientException){
+            return false;
+        }
     }
 
     private function getLinodeId(): int
