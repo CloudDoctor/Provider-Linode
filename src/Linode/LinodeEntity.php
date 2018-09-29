@@ -8,7 +8,7 @@ class LinodeEntity
 {
     private static $entitiesAvailable;
 
-    static protected function getHttpRequest() : \CloudDoctor\Common\Request
+    protected static function getHttpRequest() : \CloudDoctor\Common\Request
     {
         return CloudDoctor::getRequester('linode');
     }
@@ -23,7 +23,7 @@ class LinodeEntity
         return null;
     }
 
-    static public function listAvailable()
+    public static function listAvailable()
     {
         $called = get_called_class();
         if (!isset(self::$entitiesAvailable[$called])) {
@@ -41,7 +41,7 @@ class LinodeEntity
         return self::$entitiesAvailable[$called];
     }
 
-    static public function describeAvailable()
+    public static function describeAvailable()
     {
         $called = get_called_class();
         self::$entitiesAvailable['described-' . $called] = [];

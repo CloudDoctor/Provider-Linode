@@ -16,13 +16,13 @@ class DNSController extends LinodeEntity
     public function verifyRecordCorrect(string $domain, array $values) : bool
     {
         $linodeDomain = $this->getLinodeDomain($domain);
-        if(!isset($this->verifyRecordCache[$linodeDomain->id])){
+        if (!isset($this->verifyRecordCache[$linodeDomain->id])) {
             $this->verifyRecordCache[$linodeDomain->id] = self::getHttpRequest()->getJson(self::ENDPOINT . "/{$linodeDomain->id}/records");
         }
         $allSubdomains = $this->verifyRecordCache[$linodeDomain->id];
 
         $foundValues = [];
-        foreach($allSubdomains->data as $subdomain){
+        foreach ($allSubdomains->data as $subdomain) {
             #\Kint::dump($subdomain->name . "." . $linodeDomain->domain, $domain);
             if (trim($subdomain->name . "." . $linodeDomain->domain, ".") == $domain) {
                 $foundValues[] = $subdomain->target;
@@ -40,7 +40,7 @@ class DNSController extends LinodeEntity
         $allSubdomains = self::getHttpRequest()->getJson(self::ENDPOINT . "/{$linodeDomain->id}/records");
         $linodeDomainIdsToPurge = [];
         foreach ($allSubdomains->data as $potentialMatch) {
-            if (trim($potentialMatch->name . "." . $linodeDomain->domain,".") == $domain && $potentialMatch->type == strtoupper($type)) {
+            if (trim($potentialMatch->name . "." . $linodeDomain->domain, ".") == $domain && $potentialMatch->type == strtoupper($type)) {
                 $linodeDomainIdsToPurge[] = $potentialMatch->id;
             }
         }
@@ -49,16 +49,16 @@ class DNSController extends LinodeEntity
             self::getHttpRequest()->deleteJson(self::ENDPOINT . "/{$linodeDomain->id}/records/{$purgeId}");
             $count++;
         }
-        if($count > 0){
+        if ($count > 0) {
             CloudDoctor::Monolog()->debug("         │├ Purging {$domain} {$type} record... [{$count} REMOVED]");
-        }else{
+        } else {
             CloudDoctor::Monolog()->emerg("    │├ Purging {$domain} {$type} record... [{$count} REMOVED]");
         }
     }
 
     private function getLinodeDomain($domain): ?\StdClass
     {
-        if(isset($this->linodeDomainCache[$domain])){
+        if (isset($this->linodeDomainCache[$domain])) {
             return $this->linodeDomainCache[$domain];
         }
         $zones = DNSController::describeAvailable();

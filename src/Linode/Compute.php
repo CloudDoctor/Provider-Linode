@@ -11,7 +11,6 @@ use phpseclib\Crypt\RSA;
 use phpseclib\Net\SFTP;
 use phpseclib\Net\SSH2;
 
-
 class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
 {
     /** @var string */
@@ -41,14 +40,18 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
         parent::__construct($computeGroup, $config);
         if ($config) {
             $this->setImage($config['image']);
-            if (isset($config['group']))
+            if (isset($config['group'])) {
                 $this->setGroup($config['group']);
-            if (isset($config['backups_enabled']))
+            }
+            if (isset($config['backups_enabled'])) {
                 $this->setBackupsEnabled($config['backups_enabled']);
-            if (isset($config['swap']))
+            }
+            if (isset($config['swap'])) {
                 $this->setSwapSize($config['swap']);
-            if (isset($config['private_ip']))
+            }
+            if (isset($config['private_ip'])) {
                 $this->setPrivateIpEnabled($config['private_ip']);
+            }
         }
     }
 
@@ -228,7 +231,7 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
             $this->requester->deleteJson("/linode/instances/{$this->getLinodeId()}");
             $this->linodeId = null;
             return true;
-        }catch(ClientException $clientException){
+        } catch (ClientException $clientException) {
             return false;
         }
     }
@@ -281,7 +284,7 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
 
     public function getSshConnection(): ?SFTP
     {
-        if($this->sshConnection instanceof SSH2 && $this->sshConnection->isConnected()){
+        if ($this->sshConnection instanceof SSH2 && $this->sshConnection->isConnected()) {
             return $this->sshConnection;
         }
         $publicIp = $this->getPublicIp();

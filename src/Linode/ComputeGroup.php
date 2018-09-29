@@ -13,19 +13,20 @@ class ComputeGroup extends \CloudDoctor\Common\ComputeGroup implements ComputeGr
     public function countComputes() : int
     {
         $count = 0;
-        foreach($this->getAllLinodeInstances() as $potentialInstance){
-            if(in_array($this->getComputeGroupTag(), $potentialInstance->tags)){
+        foreach ($this->getAllLinodeInstances() as $potentialInstance) {
+            if (in_array($this->getComputeGroupTag(), $potentialInstance->tags)) {
                 $count++;
             }
         }
         return $count;
     }
 
-    private function getAllLinodeInstances() : array{
+    private function getAllLinodeInstances() : array
+    {
         $instances = [];
         $instancesList = $this->getRequest()->getJson("/linode/instances");
-        foreach($instancesList->data as $potentialInstance){
-            if(in_array($this->getComputeGroupTag(), $potentialInstance->tags)){
+        foreach ($instancesList->data as $potentialInstance) {
+            if (in_array($this->getComputeGroupTag(), $potentialInstance->tags)) {
                 $instances[] = $potentialInstance;
             }
         }
@@ -37,7 +38,7 @@ class ComputeGroup extends \CloudDoctor\Common\ComputeGroup implements ComputeGr
         $numberToCull = $this->isScalingRequired() * -1;
         $instancesAvailable = $this->getAllLinodeInstances();
         $instancesAvailable = array_values(array_reverse($instancesAvailable));
-        for($i = 0; $i < $numberToCull; $i++){
+        for ($i = 0; $i < $numberToCull; $i++) {
             $instanceToCull = $instancesAvailable[$i];
             $this->getRequest()->deleteJson("/linode/instances/{$instanceToCull->id}");
         }

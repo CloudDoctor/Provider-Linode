@@ -8,7 +8,7 @@ class LinodeInstances extends LinodeEntity
 {
     const ENDPOINT = '/linode/instances';
 
-    static public function GetById(int $linodeId)
+    public static function GetById(int $linodeId)
     {
         $request = CloudDoctor::getRequester('linode');
         $called = get_called_class();
