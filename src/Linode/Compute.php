@@ -343,12 +343,13 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
         return $this;
     }
 
-    public function updateTags(): void
+    public function updateMetaData(): void
     {
         $this->getRequester()->putJson(
             "/linode/instances/{$this->getLinodeId()}",
             [
                 'tags' => $this->getTags(),
+                'groups' => $this->getGroup(),
             ]
         );
     }
