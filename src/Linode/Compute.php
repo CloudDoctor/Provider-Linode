@@ -349,7 +349,7 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
             "/linode/instances/{$this->getLinodeId()}",
             [
                 'tags' => $this->getTags(),
-                'groups' => $this->getGroup(),
+                'group' => $this->getGroup(),
             ]
         );
     }
