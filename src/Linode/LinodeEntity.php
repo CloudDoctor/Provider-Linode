@@ -23,6 +23,11 @@ class LinodeEntity
         return null;
     }
 
+    public static function clearCache() : void
+    {
+        self::$entitiesAvailable = [];
+    }
+
     public static function listAvailable()
     {
         $called = get_called_class();

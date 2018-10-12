@@ -57,11 +57,11 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
 
     public function deploy()
     {
-        CloudDoctor::Monolog()->addDebug("        ││└ Spinning up on Linode: {$this->getName()}...");
+        CloudDoctor::Monolog()->addNotice("        ││└ Spinning up on Linode: {$this->getName()}...");
         if (!$this->isValid()) {
-            CloudDoctor::Monolog()->addDebug("    Cannot be provisioned because:");
+            CloudDoctor::Monolog()->addNotice("    Cannot be provisioned because:");
             foreach ($this->validityReasons as $reason) {
-                CloudDoctor::Monolog()->addDebug("     - {$reason}");
+                CloudDoctor::Monolog()->addNotice("     - {$reason}");
             }
         } else {
             $response = $this->requester->postJson('/linode/instances', $this->generateLinodeInstanceExpression());
@@ -71,6 +71,7 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
 
     public function isValid(): bool
     {
+        LinodeInstances::clearCache();
         $this->validityReasons = [];
         if (strlen($this->getName()) < 3) {
             $this->validityReasons[] = sprintf("Name '%s' is too short! Minimum is %d, length was %d.", $this->getName(), 3, strlen($this->getName()));
@@ -296,13 +297,13 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
                     foreach (CloudDoctor::$privateKeys as $privateKey) {
                         $key = new RSA();
                         $key->loadKey($privateKey);
-                        #CloudDoctor::Monolog()->addDebug("    > Logging in to {$publicIp}:{$port} as '{$this->getUsername()}' with key ...";
+                        CloudDoctor::Monolog()->addDebug("    > Logging in to {$publicIp}:{$port} as '{$this->getUsername()}' with key ...");
                         if ($ssh->login($this->getUsername(), $key)) {
-                            #CloudDoctor::Monolog()->addDebug(" [OKAY]");
+                            CloudDoctor::Monolog()->addDebug(" [OKAY]");
                             $this->sshConnection = $ssh;
                             return $this->sshConnection;
                         } else {
-                            #CloudDoctor::Monolog()->addDebug(" [FAIL]");
+                            CloudDoctor::Monolog()->addDebug(" [FAIL]");
                         }
                     }
                 }

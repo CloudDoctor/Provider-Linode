@@ -87,7 +87,7 @@ class DNSController extends LinodeEntity
                 'name' => $domain,
                 'ttl_sec' => 300,
             ]);
-            CloudDoctor::Monolog()->addDebug("        │├  Creating {$domain} => {$value} {$type} record SUCCESSFUL");
+            CloudDoctor::Monolog()->addNotice("        │├  Creating {$domain} => {$value} {$type} record SUCCESSFUL");
             return $domainRecord->id;
         } else {
             CloudDoctor::Monolog()->addEmergency("        │├  Creating {$domain} => {$value} {$type} record FAILURE");
