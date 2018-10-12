@@ -52,7 +52,7 @@ class DNSController extends LinodeEntity
         if ($count > 0) {
             CloudDoctor::Monolog()->debug("         │├ Purging {$domain} {$type} record... [{$count} REMOVED]");
         } else {
-            CloudDoctor::Monolog()->emerg("    │├ Purging {$domain} {$type} record... [{$count} REMOVED]");
+            CloudDoctor::Monolog()->emerg("     │├ Purging {$domain} {$type} record... [{$count} REMOVED]");
         }
     }
 

@@ -290,20 +290,23 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
         }
         $publicIp = $this->getPublicIp();
         if ($publicIp) {
-            foreach ($this->getComputeGroup()->getSsh()['port'] as $port) {
-                $fsock = @fsockopen($publicIp, $port, $errno, $errstr, 120);
-                if ($fsock) {
-                    $ssh = new SFTP($fsock);
-                    foreach (CloudDoctor::$privateKeys as $privateKey) {
-                        $key = new RSA();
-                        $key->loadKey($privateKey);
-                        CloudDoctor::Monolog()->addDebug("    > Logging in to {$publicIp}:{$port} as '{$this->getUsername()}' with key ...");
-                        if ($ssh->login($this->getUsername(), $key)) {
-                            CloudDoctor::Monolog()->addDebug(" [OKAY]");
-                            $this->sshConnection = $ssh;
-                            return $this->sshConnection;
-                        } else {
-                            CloudDoctor::Monolog()->addDebug(" [FAIL]");
+            for($attempt=0; $attempt < 30; $attempt++){
+                foreach ($this->getComputeGroup()->getSsh()['port'] as $port) {
+                    $fsock = @fsockopen($publicIp, $port, $errno, $errstr, 3);
+                    if ($fsock) {
+                        $ssh = new SFTP($fsock);
+                        #\Kint::dump(CloudDoctor::$privateKeys);
+                        foreach (CloudDoctor::$privateKeys as $privateKey) {
+                            $key = new RSA();
+                            $key->loadKey($privateKey);
+                            #CloudDoctor::Monolog()->addDebug("    > Logging in to {$publicIp} on port {$port} as '{$this->getUsername()}' with key ...");
+                            if ($ssh->login($this->getUsername(), $key)) {
+                                #CloudDoctor::Monolog()->addDebug("     > Logging in [OKAY]");
+                                $this->sshConnection = $ssh;
+                                return $this->sshConnection;
+                            } else {
+                                #CloudDoctor::Monolog()->addDebug("     > Logging in [FAIL]");
+                            }
                         }
                     }
                 }
