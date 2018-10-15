@@ -3,8 +3,9 @@
 namespace CloudDoctor\Linode;
 
 use GuzzleHttp\Client as GuzzleClient;
+use CloudDoctor\Interfaces\RequestInterface;
 
-class Request extends \CloudDoctor\Common\Request
+class Request extends \CloudDoctor\Common\Request implements RequestInterface
 {
 
     public function __construct($config)
