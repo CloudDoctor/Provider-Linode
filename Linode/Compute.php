@@ -290,7 +290,7 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
         }
         $publicIp = $this->getPublicIp();
         if ($publicIp) {
-            for($attempt=0; $attempt < 30; $attempt++){
+            for ($attempt=0; $attempt < 30; $attempt++) {
                 foreach ($this->getComputeGroup()->getSsh()['port'] as $port) {
                     $fsock = @fsockopen($publicIp, $port, $errno, $errstr, 3);
                     if ($fsock) {
