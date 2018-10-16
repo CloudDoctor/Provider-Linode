@@ -32,9 +32,6 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
     /** @var string[] */
     private $validityReasons;
 
-    /** @var SSH2 */
-    private $sshConnection;
-
     public function __construct(ComputeGroup $computeGroup, $config = null)
     {
         parent::__construct($computeGroup, $config);
@@ -64,8 +61,28 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
                 CloudDoctor::Monolog()->addNotice("     - {$reason}");
             }
         } else {
-            $response = $this->requester->postJson('/linode/instances', $this->generateLinodeInstanceExpression());
+            $response = $this->requester->postJson(
+                '/linode/instances', 
+                $this->generateLinodeInstanceExpression()
+            );
             $this->linodeId = $response->id;
+        }
+    }
+
+    protected function testValidity() : void
+    {
+        parent::testValidity();
+        if (in_array($this->getName(), LinodeInstances::listAvailable())) {
+            $this->validityReasons[] = sprintf("Name '%s' is already in use!", $this->getName());
+        }
+        if (!in_array($this->getRegion(), Regions::listAvailable())) {
+            $this->validityReasons[] = sprintf("Region '%s' isn't in '%s'.", $this->getRegion(), implode("|", Regions::listAvailable()));
+        }
+        if (!in_array($this->getType(), Types::listAvailable())) {
+            $this->validityReasons[] = sprintf("Type '%s' isn't in '%s'.", $this->getType(), implode("|", Types::listAvailable()));
+        }
+        if (!in_array($this->getImage(), Images::listAvailable())) {
+            $this->validityReasons[] = sprintf("Type '%s' isn't in '%s'.", $this->getImage(), implode("|", Images::listAvailable()));
         }
     }
 
@@ -283,50 +300,18 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
         return $this->getLinodeState() == 'offline';
     }
 
-    public function getSshConnection(): ?SFTP
-    {
-        if ($this->sshConnection instanceof SSH2 && $this->sshConnection->isConnected()) {
-            return $this->sshConnection;
-        }
-        $publicIp = $this->getPublicIp();
-        if ($publicIp) {
-            for ($attempt=0; $attempt < 30; $attempt++) {
-                foreach ($this->getComputeGroup()->getSsh()['port'] as $port) {
-                    $fsock = @fsockopen($publicIp, $port, $errno, $errstr, 3);
-                    if ($fsock) {
-                        $ssh = new SFTP($fsock);
-                        #\Kint::dump(CloudDoctor::$privateKeys);
-                        foreach (CloudDoctor::$privateKeys as $privateKey) {
-                            $key = new RSA();
-                            $key->loadKey($privateKey);
-                            #CloudDoctor::Monolog()->addDebug("    > Logging in to {$publicIp} on port {$port} as '{$this->getUsername()}' with key ...");
-                            if ($ssh->login($this->getUsername(), $key)) {
-                                #CloudDoctor::Monolog()->addDebug("     > Logging in [OKAY]");
-                                $this->sshConnection = $ssh;
-                                return $this->sshConnection;
-                            } else {
-                                #CloudDoctor::Monolog()->addDebug("     > Logging in [FAIL]");
-                            }
-                        }
-                    }
-                }
-            }
-            return null;
-        } else {
-            return null;
-        }
-    }
-
-    public function getPublicIp(): string
+    public function getPublicIp(): ?string
     {
         $linode = LinodeInstances::GetById($this->getLinodeId());
-        $publicIp = null;
+        if(!$linode){
+            return null;
+        }
         foreach ($linode->ipv4 as $ip) {
             if (!$this->isIpPrivate($ip)) {
-                $publicIp = $ip;
+                return $ip;
             }
         }
-        return $publicIp;
+        return null;
     }
 
     /**
