@@ -62,7 +62,7 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
             }
         } else {
             $response = $this->requester->postJson(
-                '/linode/instances', 
+                '/linode/instances',
                 $this->generateLinodeInstanceExpression()
             );
             $this->linodeId = $response->id;
@@ -300,10 +300,10 @@ class Compute extends \CloudDoctor\Common\Compute implements ComputeInterface
         return $this->getLinodeState() == 'offline';
     }
 
-    public function getPublicIp(): ?string
+    public function getIp(): ?string
     {
         $linode = LinodeInstances::GetById($this->getLinodeId());
-        if(!$linode){
+        if (!$linode) {
             return null;
         }
         foreach ($linode->ipv4 as $ip) {
