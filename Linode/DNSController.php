@@ -3,12 +3,12 @@
 namespace CloudDoctor\Linode;
 
 use CloudDoctor\CloudDoctor;
-use CloudDoctor\Interfaces\DnsControllerInterface;
+use CloudDoctor\Interfaces\DNSControllerInterface;
 use Monolog\Logger;
 
 class DNSController
     extends LinodeEntity
-    implements DnsControllerInterface
+    implements DNSControllerInterface
 {
     const ENDPOINT = '/domains';
 
@@ -97,5 +97,17 @@ class DNSController
             CloudDoctor::Monolog()->addEmergency("        │├  Creating {$domain} => {$value} {$type} record FAILURE");
             return false;
         }
+    }
+
+    public function createRecords(string $type, string $domain, array $values): bool
+    {
+        $overallSuccess = true;
+        foreach($values as $value){
+            $success = $this->createRecord($type, $domain, $value);
+            if($success != true){
+                $overallSuccess = false;
+            }
+        }
+        return $overallSuccess;
     }
 }
