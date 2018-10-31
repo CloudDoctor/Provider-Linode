@@ -3,9 +3,12 @@
 namespace CloudDoctor\Linode;
 
 use CloudDoctor\CloudDoctor;
+use CloudDoctor\Interfaces\DnsControllerInterface;
 use Monolog\Logger;
 
-class DNSController extends LinodeEntity
+class DNSController
+    extends LinodeEntity
+    implements DnsControllerInterface
 {
     const ENDPOINT = '/domains';
 
@@ -34,7 +37,7 @@ class DNSController extends LinodeEntity
         return count(array_diff($values, $foundValues)) == 0 && count($values) == count($foundValues);
     }
 
-    public function removeMatchingDomains(string $type, string $domain)
+    public function removeRecord(string $type, string $domain) : int
     {
         $linodeDomain = $this->getLinodeDomain($domain);
         $allSubdomains = self::getHttpRequest()->getJson(self::ENDPOINT . "/{$linodeDomain->id}/records");
@@ -54,6 +57,7 @@ class DNSController extends LinodeEntity
         } else {
             CloudDoctor::Monolog()->emerg("     │├ Purging {$domain} {$type} record... [{$count} REMOVED]");
         }
+        return $count;
     }
 
     private function getLinodeDomain($domain): ?\StdClass
@@ -77,7 +81,7 @@ class DNSController extends LinodeEntity
         return null;
     }
 
-    public function createRecord(string $type, string $domain, string $value): ?int
+    public function createRecord(string $type, string $domain, string $value):bool
     {
         $linodeDomain = $this->getLinodeDomain($domain);
         if ($linodeDomain) {
@@ -88,10 +92,10 @@ class DNSController extends LinodeEntity
                 'ttl_sec' => 300,
             ]);
             CloudDoctor::Monolog()->addNotice("        │├  Creating {$domain} => {$value} {$type} record SUCCESSFUL");
-            return $domainRecord->id;
+            return true;
         } else {
             CloudDoctor::Monolog()->addEmergency("        │├  Creating {$domain} => {$value} {$type} record FAILURE");
-            return null;
+            return false;
         }
     }
 }
